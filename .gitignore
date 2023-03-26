@@ -977,11 +977,6 @@ _deps
 *.a
 *.lib
 
-# Executables
-*.exe
-*.out
-*.app
-
 # C/C++ binary extension file
 *.bin
 
