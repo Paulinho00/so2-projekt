@@ -9,7 +9,7 @@ Philosopher::Philosopher(int id, std::shared_ptr<Chopstick> leftChopstick, std::
 }
 
 void Philosopher::dine() {
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 10000; ++i) {
         think();
         eat();
     }
