@@ -3,4 +3,4 @@ project(dining_philosophers)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(dining_philosophers main.cpp)
+add_executable(dining_philosophers main.cpp philosopher.cpp chopstick.cpp)
