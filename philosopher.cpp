@@ -16,10 +16,11 @@ Philosopher::Philosopher(int id, std::shared_ptr<Chopstick> leftChopstick, std::
 }
 
 void* Philosopher::dine() {
-    for (int i = 0; i < 2; ++i) {
+    for (int i = 0; i < 100; ++i) {
         think();
         eat();
     }
+    print_text("KONIEC");
 
     return NULL;
 }
@@ -31,57 +32,89 @@ void Philosopher::think() {
 
 void Philosopher::eat() {
     bool hasForks = false;
+    bool leftLocked = false;
+    bool rightLocked = false;
     while(!hasForks) {
-        // try to acquire mutex locks for forks
-        leftChopstick->pick_up();
-        leftChopstick->setInUse(true);
-        bool leftLocked = true;
-        if (!rightChopstick->isInUseByPhilosopher()) {
+        if(leftChopstick->get_id() < rightChopstick->get_id()) {
 
-            rightChopstick->pick_up();
-            bool rightLocked = true;
-            hasForks = true;
+            // try to acquire mutex locks for forks
+            leftChopstick->pick_up();
+            leftChopstick->setInUse(true);
+            leftLocked = true;
+            if (!rightChopstick->isInUseByPhilosopher()) {
 
-            rightChopstick->setInUse(true);
+                rightChopstick->pick_up();
+                rightLocked = true;
+                hasForks = true;
 
-            print_text("is eating");
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                rightChopstick->setInUse(true);
 
-            leftChopstick->setInUse(false);
-            rightChopstick->setInUse(false);
+                print_text("is eating");
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-            leftChopstick->put_down();
-            rightChopstick->put_down();
-            print_text("koniec zarcia");
-            // Signal the next philosopher in line
-            pthread_mutex_lock(queueMutex);
-            if (!waitQueue->empty()) {
-                print_text("wysyła na sygnał");
-                pthread_cond_signal(nextPhilosopher);
+                leftChopstick->setInUse(false);
+                rightChopstick->setInUse(false);
+
+                leftChopstick->put_down();
+                rightChopstick->put_down();
+                // Signal the next philosopher in line
+                pthread_mutex_lock(queueMutex);
+                if (!waitQueue->empty()) {
+                    pthread_cond_broadcast(nextPhilosopher);
+                }
+                pthread_mutex_unlock(queueMutex);
+            } else {
+                //if right fork is in use
+                leftChopstick->put_down();
+                leftLocked = false;
             }
-            pthread_mutex_unlock(queueMutex);
-        } else {
-            //if right fork is in use
-            leftChopstick->put_down();
-            leftLocked = false;
+        }
+        else {
+            // try to acquire mutex locks for forks
+            rightChopstick->pick_up();
+            rightChopstick->setInUse(true);
+            rightLocked = true;
+            if (!leftChopstick->isInUseByPhilosopher()) {
+
+                leftChopstick->pick_up();
+                rightLocked = true;
+                hasForks = true;
+
+                leftChopstick->setInUse(true);
+
+
+                print_text("is eating");
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+                leftChopstick->setInUse(false);
+                rightChopstick->setInUse(false);
+
+                leftChopstick->put_down();
+                rightChopstick->put_down();
+                // Signal the next philosopher in line
+                pthread_mutex_lock(queueMutex);
+                if (!waitQueue->empty()) {
+                    pthread_cond_broadcast(nextPhilosopher);
+                }
+                pthread_mutex_unlock(queueMutex);
+            } else {
+                //if right fork is in use
+                rightChopstick->put_down();
+                rightLocked = false;
+            }
+
         }
 
         // if we get here, we failed to acquire both forks
-        if (!hasForks && !leftLocked) {
+        if (!hasForks && !leftLocked && !rightLocked) {
             // if we didn't acquire left fork, add ourselves to queue
             pthread_mutex_lock(queueMutex);
             waitQueue->push(this);
-            pthread_mutex_unlock(queueMutex);
-
-            print_text("czeka na sygnał");
-            leftChopstick->pick_up();
-            pthread_mutex_lock(queueMutex);
             while (waitQueue->front() != this) {
                 pthread_cond_wait(nextPhilosopher, queueMutex);
             }
             waitQueue->pop();
             pthread_mutex_unlock(queueMutex);
-            print_text("doczekał się");
         }
     }
 }

@@ -5,7 +5,7 @@
 #include "philosopher.hpp"
 
 int main() {
-    const int numPhilosophers = 5;
+    const int numPhilosophers = 10;
     std::vector<std::shared_ptr<Chopstick>> chopsticks(numPhilosophers);
 
     std::queue<Philosopher*> waitQueue;
