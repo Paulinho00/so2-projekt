@@ -1,12 +1,13 @@
 #ifndef CHOPSTICK_HPP
 #define CHOPSTICK_HPP
 
-#include <mutex>
+#include <pthread.h>
+#include <semaphore.h>
 
 class Chopstick {
 public:
-    explicit Chopstick(int id) : id(id) {}
-    Chopstick() = default;
+    explicit Chopstick(int id);
+    ~Chopstick();
 
     int get_id() const;
     void pick_up();
@@ -14,7 +15,7 @@ public:
 
 private:
     int id;
-    std::mutex mutex;
+    sem_t mutex;
 };
 
 #endif

@@ -1,7 +1,7 @@
 #include <iostream>
-#include <thread>
 #include <vector>
 #include <memory>
+#include <pthread.h>
 #include "philosopher.hpp"
 
 int main() {
@@ -18,14 +18,14 @@ int main() {
         philosophers[i] = Philosopher(i, chopsticks[i], chopsticks[(i + 1) % numPhilosophers]);
     }
 
-    std::vector<std::thread> threads(numPhilosophers);
+    pthread_t threads[numPhilosophers];
 
     for (int i = 0; i < numPhilosophers; ++i) {
-        threads[i] = std::thread(&Philosopher::dine, &philosophers[i]);
+        pthread_create(&threads[i], NULL, (void* (*)(void*)) &Philosopher::dineWrapper, &philosophers[i]);
     }
 
-    for (int i = 0; i < numPhilosophers; ++i) {
-        threads[i].join();
+    for (unsigned long long thread : threads) {
+        pthread_join(thread, NULL);
     }
 
     return 0;

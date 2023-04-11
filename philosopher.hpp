@@ -9,7 +9,8 @@ class Philosopher {
 public:
     Philosopher(int id, std::shared_ptr<Chopstick> leftChopstick, std::shared_ptr<Chopstick> rightChopstick);
     Philosopher() = default;
-    void dine();
+    void* dine();
+    static void* dineWrapper(void* arg);
 
 private:
     int id;
