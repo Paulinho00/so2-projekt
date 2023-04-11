@@ -2,20 +2,21 @@
 #define CHOPSTICK_HPP
 
 #include <pthread.h>
-#include <semaphore.h>
 
 class Chopstick {
 public:
     explicit Chopstick(int id);
-    ~Chopstick();
 
     int get_id() const;
     void pick_up();
     void put_down();
+    bool isInUseByPhilosopher();
+    void setInUse(bool inUse);
 
 private:
     int id;
-    sem_t mutex;
+    pthread_mutex_t mutex;
+    bool isInUse;
 };
 
 #endif

@@ -2,20 +2,26 @@
 
 Chopstick::Chopstick(int id){
     this->id = id;
-    sem_init(&mutex, 0, 1);
-}
-
-Chopstick::~Chopstick() {
-    sem_destroy(&mutex);
+    isInUse = false;
+    pthread_mutex_init(&mutex, NULL);
 }
 
 int Chopstick::get_id() const {
     return id;
 }
 
+void Chopstick::setInUse(bool inUse) {
+     isInUse = inUse;
+}
+
+bool Chopstick::isInUseByPhilosopher(){
+    return isInUse;
+}
+
+
 void Chopstick::pick_up() {
-    sem_wait(&mutex);
+    pthread_mutex_lock(&mutex);
 }
 void Chopstick::put_down() {
-    sem_post(&mutex);
+    pthread_mutex_unlock(&mutex);
 }
