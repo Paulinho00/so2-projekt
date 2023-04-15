@@ -13,11 +13,11 @@ public:
     Philosopher() = default;
     void* dine();
     static void* dineWrapper(void* arg);
-    int getMealsCounter();
+    float getWaitingTime();
 
 private:
     int id;
-    int eatenMealsCounter;
+    float waitingTimeCounter;
     std::string name;
     std::shared_ptr<Chopstick> leftChopstick;
     std::shared_ptr<Chopstick> rightChopstick;
@@ -25,7 +25,7 @@ private:
     pthread_mutex_t* queueMutex;
     pthread_cond_t* nextPhilosopher;
     void think();
-    void incrementMealsCounter();
+    void incrementMealsCounter(float addValue);
     void eat();
     void print_text(const std::string& text);
 };

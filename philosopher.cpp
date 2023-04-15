@@ -3,11 +3,12 @@
 #include <pthread.h>
 #include <thread>
 #include "philosopher.hpp"
+#include <time.h>
 
 Philosopher::Philosopher(int id, std::shared_ptr<Chopstick> leftChopstick, std::shared_ptr<Chopstick> rightChopstick,
                          std::queue<Philosopher*>& waitQueue, pthread_mutex_t& queueMutex, pthread_cond_t& nextPhilosopher) {
     name = "Philosopher " + std::to_string(id);
-    this->eatenMealsCounter = 0;
+    this->waitingTimeCounter = 0;
     this->id = id;
     this->leftChopstick = leftChopstick;
     this->rightChopstick = rightChopstick;
@@ -16,12 +17,12 @@ Philosopher::Philosopher(int id, std::shared_ptr<Chopstick> leftChopstick, std::
     this->nextPhilosopher = &nextPhilosopher;
 }
 
-void Philosopher::incrementMealsCounter() {
-    eatenMealsCounter++;
+void Philosopher::incrementMealsCounter(float addValue) {
+    waitingTimeCounter += addValue;
 }
 
-int Philosopher::getMealsCounter() {
-    return eatenMealsCounter;
+float Philosopher::getWaitingTime() {
+    return waitingTimeCounter;
 }
 
 void* Philosopher::dine() {
@@ -43,6 +44,7 @@ void Philosopher::eat() {
     bool hasForks = false;
     bool leftLocked = false;
     bool rightLocked = false;
+    std::clock_t time = clock();
     while(!hasForks) {
         if(leftChopstick->get_id() < rightChopstick->get_id()) {
 
@@ -57,11 +59,9 @@ void Philosopher::eat() {
                 hasForks = true;
 
                 rightChopstick->setInUse(true);
-
+                incrementMealsCounter((float)(clock()-time)/CLOCKS_PER_SEC);
                 print_text("is eating");
                 std::this_thread::sleep_for(std::chrono::milliseconds(500));
-                incrementMealsCounter();
-
                 leftChopstick->setInUse(false);
                 rightChopstick->setInUse(false);
 
@@ -91,10 +91,11 @@ void Philosopher::eat() {
 
                 leftChopstick->setInUse(true);
 
-
+                incrementMealsCounter((float)(clock()-time)/CLOCKS_PER_SEC);
                 print_text("is eating");
                 std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
+                time = clock();
                 leftChopstick->setInUse(false);
                 rightChopstick->setInUse(false);
 

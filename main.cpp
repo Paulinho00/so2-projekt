@@ -21,7 +21,7 @@ int main() {
 
     std::vector<Philosopher> philosophers(numPhilosophers);
 
-    for (int i = 0; i < numPhilosophers; ++i) {
+    for (int i = 0; i < numPhilosophers; i++) {
         philosophers[i] = Philosopher(i, chopsticks[i], chopsticks[(i + 1) % numPhilosophers], waitQueue, queueMutex, nextPhilosopher);
     }
 
@@ -35,10 +35,12 @@ int main() {
         pthread_join(thread, NULL);
     }
 
-//    pthread_join(threads[0], NULL);
 
-    for(int i = 0; i <= numPhilosophers; i++){
-        std::cout << "Philosopher " << i << ": " << philosophers[i].getMealsCounter() << "\n";
+
+
+
+    for(int i = 0; i < numPhilosophers; i++){
+        std::cout << "Philosopher " << i << ": " << philosophers[i].getWaitingTime() << "\n";
     }
 
     pthread_mutex_destroy(&queueMutex);
