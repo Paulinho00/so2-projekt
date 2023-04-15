@@ -13,6 +13,7 @@ public:
     Philosopher() = default;
     void* dine();
     static void* dineWrapper(void* arg);
+    int getMealsCounter();
 
 private:
     int id;
@@ -25,7 +26,6 @@ private:
     pthread_cond_t* nextPhilosopher;
     void think();
     void incrementMealsCounter();
-    int getMealsCounter();
     void eat();
     void print_text(const std::string& text);
 };

@@ -35,6 +35,12 @@ int main() {
         pthread_join(thread, NULL);
     }
 
+//    pthread_join(threads[0], NULL);
+
+    for(int i = 0; i <= numPhilosophers; i++){
+        std::cout << "Philosopher " << i << ": " << philosophers[i].getMealsCounter() << "\n";
+    }
+
     pthread_mutex_destroy(&queueMutex);
     pthread_cond_destroy(&nextPhilosopher);
 
