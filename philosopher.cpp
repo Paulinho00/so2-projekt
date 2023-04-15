@@ -7,6 +7,7 @@
 Philosopher::Philosopher(int id, std::shared_ptr<Chopstick> leftChopstick, std::shared_ptr<Chopstick> rightChopstick,
                          std::queue<Philosopher*>& waitQueue, pthread_mutex_t& queueMutex, pthread_cond_t& nextPhilosopher) {
     name = "Philosopher " + std::to_string(id);
+    this->eatenMealsCounter = 0;
     this->id = id;
     this->leftChopstick = leftChopstick;
     this->rightChopstick = rightChopstick;
@@ -15,12 +16,20 @@ Philosopher::Philosopher(int id, std::shared_ptr<Chopstick> leftChopstick, std::
     this->nextPhilosopher = &nextPhilosopher;
 }
 
+void Philosopher::incrementMealsCounter() {
+    eatenMealsCounter++;
+}
+
+int Philosopher::getMealsCounter() {
+    return eatenMealsCounter;
+}
+
 void* Philosopher::dine() {
     for (int i = 0; i < 100; ++i) {
         think();
         eat();
     }
-    print_text("KONIEC");
+    print_text("END");
 
     return NULL;
 }
@@ -51,6 +60,7 @@ void Philosopher::eat() {
 
                 print_text("is eating");
                 std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                incrementMealsCounter();
 
                 leftChopstick->setInUse(false);
                 rightChopstick->setInUse(false);
@@ -75,7 +85,6 @@ void Philosopher::eat() {
             rightChopstick->setInUse(true);
             rightLocked = true;
             if (!leftChopstick->isInUseByPhilosopher()) {
-
                 leftChopstick->pick_up();
                 rightLocked = true;
                 hasForks = true;

@@ -16,14 +16,16 @@ public:
 
 private:
     int id;
+    int eatenMealsCounter;
     std::string name;
     std::shared_ptr<Chopstick> leftChopstick;
     std::shared_ptr<Chopstick> rightChopstick;
     std::queue<Philosopher*>* waitQueue;
     pthread_mutex_t* queueMutex;
     pthread_cond_t* nextPhilosopher;
-
     void think();
+    void incrementMealsCounter();
+    int getMealsCounter();
     void eat();
     void print_text(const std::string& text);
 };
