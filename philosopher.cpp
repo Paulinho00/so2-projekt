@@ -3,7 +3,10 @@
 #include <pthread.h>
 #include <thread>
 #include "philosopher.hpp"
+#include "visualization.hpp"
 #include <time.h>
+
+int* Philosopher::philosopher_status;
 
 Philosopher::Philosopher(int id, std::shared_ptr<Chopstick> leftChopstick, std::shared_ptr<Chopstick> rightChopstick,
                          std::queue<Philosopher*>& waitQueue, pthread_mutex_t& queueMutex, pthread_cond_t& nextPhilosopher) {
@@ -15,6 +18,14 @@ Philosopher::Philosopher(int id, std::shared_ptr<Chopstick> leftChopstick, std::
     this->waitQueue = &waitQueue;
     this->queueMutex = &queueMutex;
     this->nextPhilosopher = &nextPhilosopher;
+    this->drawMutex = PTHREAD_MUTEX_INITIALIZER;
+}
+
+void Philosopher::set_philosopher_status(){
+    philosopher_status = new int [10];
+    for(int i = 0; i < 10; i++){
+        philosopher_status[i] = 0;
+    }
 }
 
 void Philosopher::incrementMealsCounter(float addValue) {
@@ -30,13 +41,17 @@ void* Philosopher::dine() {
         think();
         eat();
     }
-    print_text("END");
+    //print_text("END");
 
     return NULL;
 }
 
 void Philosopher::think() {
-    print_text("is thinking");
+    //print_text("is thinking");
+    philosopher_status[this->id] = 0;
+    pthread_mutex_lock(&drawMutex);
+    Visualization::drawing(philosopher_status);
+    pthread_mutex_unlock(&drawMutex);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 
@@ -55,18 +70,32 @@ void Philosopher::eat() {
             if (!rightChopstick->isInUseByPhilosopher()) {
 
                 rightChopstick->pick_up();
+
                 rightLocked = true;
                 hasForks = true;
 
                 rightChopstick->setInUse(true);
                 incrementMealsCounter((float)(clock()-time)/CLOCKS_PER_SEC);
-                print_text("is eating");
+
+                philosopher_status[this->id] = 1;
+                
+                pthread_mutex_lock(&drawMutex);
+                Visualization::drawing(philosopher_status);
+                pthread_mutex_unlock(&drawMutex);
+
+                //print_text("is eating");
                 std::this_thread::sleep_for(std::chrono::milliseconds(500));
                 leftChopstick->setInUse(false);
                 rightChopstick->setInUse(false);
 
                 leftChopstick->put_down();
                 rightChopstick->put_down();
+
+                philosopher_status[this->id] = 0;
+                pthread_mutex_lock(&drawMutex);
+                Visualization::drawing(philosopher_status);
+                pthread_mutex_unlock(&drawMutex);
+
                 // Signal the next philosopher in line
                 pthread_mutex_lock(queueMutex);
                 if (!waitQueue->empty()) {
@@ -86,13 +115,20 @@ void Philosopher::eat() {
             rightLocked = true;
             if (!leftChopstick->isInUseByPhilosopher()) {
                 leftChopstick->pick_up();
+
                 rightLocked = true;
                 hasForks = true;
 
                 leftChopstick->setInUse(true);
 
                 incrementMealsCounter((float)(clock()-time)/CLOCKS_PER_SEC);
-                print_text("is eating");
+
+                philosopher_status[this->id] = 1;
+                pthread_mutex_lock(&drawMutex);
+                Visualization::drawing(philosopher_status);
+                pthread_mutex_unlock(&drawMutex);
+
+                //print_text("is eating");
                 std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
                 time = clock();
@@ -101,6 +137,12 @@ void Philosopher::eat() {
 
                 leftChopstick->put_down();
                 rightChopstick->put_down();
+
+                philosopher_status[this->id] = 1;
+                pthread_mutex_lock(&drawMutex);
+                Visualization::drawing(philosopher_status);
+                pthread_mutex_unlock(&drawMutex);
+
                 // Signal the next philosopher in line
                 pthread_mutex_lock(queueMutex);
                 if (!waitQueue->empty()) {
@@ -130,7 +172,7 @@ void Philosopher::eat() {
 }
 
 void Philosopher::print_text(const std::string& text) {
-    std::cout << name << " " << text << std::endl;
+    //std::cout << name << " " << text << std::endl;
 }
 
 void* Philosopher::dineWrapper(void* arg) {

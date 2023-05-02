@@ -3,8 +3,14 @@
 #include <memory>
 #include <pthread.h>
 #include "philosopher.hpp"
+#include "visualization.hpp"
 
 int main() {
+
+    //Visualization::drawing();
+
+    Philosopher::set_philosopher_status();
+
     const int numPhilosophers = 10;
     std::vector<std::shared_ptr<Chopstick>> chopsticks(numPhilosophers);
 
@@ -34,10 +40,6 @@ int main() {
     for (unsigned long long thread : threads) {
         pthread_join(thread, NULL);
     }
-
-
-
-
 
     for(int i = 0; i < numPhilosophers; i++){
         std::cout << "Philosopher " << i << ": " << philosophers[i].getWaitingTime() << "\n";
