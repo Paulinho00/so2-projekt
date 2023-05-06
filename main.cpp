@@ -40,11 +40,7 @@ int main() {
     for (unsigned long long thread : threads) {
         pthread_join(thread, NULL);
     }
-
-    for(int i = 0; i < numPhilosophers; i++){
-        std::cout << "Philosopher " << i << ": " << philosophers[i].getWaitingTime() << "\n";
-    }
-
+    
     pthread_mutex_destroy(&queueMutex);
     pthread_cond_destroy(&nextPhilosopher);
 
